@@ -1,6 +1,8 @@
 import logging
 import random
 
+import numpy as np
+
 from utils import utils
 
 
@@ -11,7 +13,9 @@ def mainTrain():
     logger = logging.getLogger('Chess_SL')
 
     # set the random seed
+    # set the random seed
     random.seed(a=None, version=2)
+    np.random.seed(seed=None)
 
     logger.debug("start the main test program")
 

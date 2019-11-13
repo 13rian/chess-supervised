@@ -7,3 +7,4 @@ __pycache__/
 .project
 .pydevproject
 /data_set_raw
+*.pgn
