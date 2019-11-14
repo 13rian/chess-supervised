@@ -8,3 +8,4 @@ __pycache__/
 .pydevproject
 /data_set_raw
 *.pgn
+*.h5

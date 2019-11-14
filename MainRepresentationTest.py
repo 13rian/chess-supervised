@@ -333,6 +333,25 @@ logger.info("board representation tests finished, there should be no error log s
 
 
 
+# # test how long the board representation needs
+# import time
+# board = chess.Board()
+# board.push_san("e4")
+# board.push_san("e5")
+# board.push_san("Nf3")
+# board.push_san("Nc6")
+# board.push_san("Bc4")
+# board.push_san("Bc5")
+# board.push_san("Qe2")
+# board.push_san("d6")
+# board.push_san("Nc3")
+# board.push_san("Bd7")
+# board.push_san("b3")
+# board.push_san("Qe7")
+# start = time.time()
+# for i in range(10000):
+#     mat = board_representation.board_to_matrix(board)
+# print(time.time() - start)
 
 
 
