@@ -71,7 +71,6 @@ def create_data_set():
             game_count += 1
             if game_count % 1000 == 0:
                 logger.debug("processed {} games".format(game_count))
-                break
 
         pgn_file.close()
 
