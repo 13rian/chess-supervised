@@ -6,6 +6,7 @@ import numpy as np
 
 from utils import utils
 import globals
+import data_processing
 
 
 #@utils.profile
@@ -60,6 +61,28 @@ def mainTrain():
     b = np.array([4])
     c = np.array([5, 6, 7])
     print(np.concatenate((a, b, c)))
+
+    try:
+        1 / 0
+    except Exception as e:
+        logging.error("error: {}".format(e))  # ERROR:root:division by zero
+
+
+
+    pgn_file = open("pgns/KingBaseLite2019-B00-B19.pgn")
+    game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
+    while game is not None:
+        result = data_processing.value_from_result(game.headers["Result"])
+        if result is None:
+            print(game)
+
+        game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
+        for move in game.mainline_moves():
+            if move.uci() == "0000":
+                print(game)
+                print(move)
+
+
 
 
 if __name__ == '__main__':

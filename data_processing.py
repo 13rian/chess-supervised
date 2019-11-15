@@ -38,7 +38,6 @@ def create_data_set():
 
     # add load all pgn files and add the games to the data set
     path_list = os.listdir(pgn_dir)
-    game = 1
     game_count = 0
     for pgn_file_name in path_list:
         pgn_file_path = pgn_dir + "/" + pgn_file_name
@@ -47,26 +46,37 @@ def create_data_set():
 
 
         # read out all games in the pgn file
+        game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
         while game is not None:
-            game = chess.pgn.read_game(pgn_file)     # read out the next game from the pgn
             board = chess.Board()               # create a new board
 
             # get the value of the game
             result = value_from_result(game.headers["Result"])
+            if result is None:
+                game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
+                continue
 
             # go through all moves and append the data to the data file
             for move in game.mainline_moves():
-                network_input = board_representation.board_to_matrix(board)
-                network_input = network_input.flatten()
-                policy = board_representation.move_to_policy(move, board.turn)
-                value = np.array([result]) if board.turn == chess.WHITE else np.array([-result])
+                try:
+                    network_input = board_representation.board_to_matrix(board)
+                    network_input = network_input.flatten()
+                    policy = board_representation.move_to_policy(move, board.turn)
+                    value = np.array([result]) if board.turn == chess.WHITE else np.array([-result])
 
-                training_example = np.concatenate((network_input, policy, value))
-                training_example = np.expand_dims(training_example, axis=0)
-                array_c.append(training_example)
+                    training_example = np.concatenate((network_input, policy, value))
+                    training_example = np.expand_dims(training_example, axis=0)
+                    array_c.append(training_example)
 
-                # make the move to get the next board position
-                board.push(move)
+                    # make the move to get the next board position
+                    board.push(move)
+
+                except Exception as e:
+                    # ignore the rest of the game if an error occurs
+                    logging.error("error in the current game: ", exc_info=True)
+                    continue
+
+            game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
 
             game_count += 1
             if game_count % 1000 == 0:
@@ -74,6 +84,7 @@ def create_data_set():
 
         pgn_file.close()
 
+    logger.info("total number of games processed: {}".format(game_count))
     file.close()
 
 
