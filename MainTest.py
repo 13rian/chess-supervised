@@ -21,18 +21,45 @@ def mainTrain():
 
     logger.debug("start the main test program")
 
-    a = np.array([[1,2,3,4], [5,6,7,8]])
-    print(a)
-    print(a.flatten())
+    board = chess.Board()
+    board.push_san("e4")
+    board.push_san("e5")
+    board.push_san("Nf3")
+    board.push_san("Nc6")
+    board.push_san("Bc4")
+    board.push_san("Bc5")
+    board.push_san("Qe2")
+    board.push_san("d6")
+    board.push_san("Nc3")
+    board.push_san("Bd7")
+    board.push_san("b3")
+    board.push_san("Qe7")
 
-    print("length of all possible uci moves: ", len(globals.ALL_MOVES))
+    print(board)
+    print(" mirror:")
+    board = board.mirror()
+    print(board)
 
-    # mirror a move
-    move = chess.Move.from_uci("a1a2")
-    from_square = chess.square_mirror(move.from_square)
-    to_square = chess.square_mirror(move.to_square)
-    print("mirrored a1a2: ", chess.Move(from_square, to_square, move.promotion, move.drop))
+    print(board.has_queenside_castling_rights(chess.BLACK))
 
+
+    import board_representation
+    board = chess.Board()
+    bit_board = board_representation.board_to_matrix(board)
+    print(bit_board[0])
+
+    board.push_san("e4")
+    bit_board = board_representation.board_to_matrix(board)
+    print(bit_board[0])
+    print(" ")
+    print(bit_board[6])
+
+
+
+    a = np.array([1, 2, 3])
+    b = np.array([4])
+    c = np.array([5, 6, 7])
+    print(np.concatenate((a, b, c)))
 
 
 if __name__ == '__main__':

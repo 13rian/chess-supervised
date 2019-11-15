@@ -3,6 +3,9 @@ import copy
 import chess
 
 
+from globals import CONST
+import board_representation
+
 
 def __all_moves__():
     """
@@ -104,3 +107,9 @@ print("length of all legal moves: ", len(possible_moves))
 
 
 
+
+print("length of all white legal moves: ", len(board_representation.WHITE_MOVE_LABELS))
+# print("length of all black legal moves: ", len(board_representation.BLACK_MOVE_LABLES))
+
+print(board_representation.WHITE_MOVE_LABELS)
+# print(board_representation.BLACK_MOVE_LABLES)
