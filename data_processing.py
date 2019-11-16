@@ -4,6 +4,8 @@ import os
 import chess.pgn
 import tables
 import numpy as np
+import torch
+from torch.utils import data
 
 import board_representation
 from globals import CONST
@@ -18,7 +20,7 @@ data_set_file = 'king-base-light.h5'        # name of the output file
 
 
 # row size is number of channels + policy + value
-example_size = CONST.INPUT_CHANNELS * CONST.BOARD_HEIGHT * CONST.BOARD_WIDTH + board_representation.LABEL_COUNT + 1
+example_size = CONST.INPUT_CHANNELS * CONST.BOARD_HEIGHT * CONST.BOARD_WIDTH + 1 + 1
 
 
 def create_data_set():
@@ -61,10 +63,11 @@ def create_data_set():
                 try:
                     network_input = board_representation.board_to_matrix(board)
                     network_input = network_input.flatten()
-                    policy = board_representation.move_to_policy(move, board.turn)
+                    move_idx = np.array([board_representation.move_index(move, board.turn)])
+                    # policy = board_representation.move_to_policy(move, board.turn)
                     value = np.array([result]) if board.turn == chess.WHITE else np.array([-result])
 
-                    training_example = np.concatenate((network_input, policy, value))
+                    training_example = np.concatenate((network_input, move_idx, value))
                     training_example = np.expand_dims(training_example, axis=0)
                     array_c.append(training_example)
 
@@ -79,7 +82,7 @@ def create_data_set():
             game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
 
             game_count += 1
-            if game_count % 1000 == 0:
+            if game_count % 100 == 0:
                 logger.debug("processed {} games".format(game_count))
 
         pgn_file.close()
@@ -117,3 +120,53 @@ def value_from_result(result):
         return -1
 
     logger.error("result string no recognized: {}".format(result))
+
+
+def get_compression_filter():
+    """
+    returns the compression filter to write and read the hdf5 file
+    :return:
+    """
+    compression_filter = tables.Filters(complib='zlib', complevel=1)
+    return compression_filter
+
+
+class Dataset(data.Dataset):
+    def __init__(self, file_path):
+        """
+        data set for the neural network training
+        :param file_path:      path to the data set file
+        """
+        self.file_path = file_path
+        # self.data_file = None         cannot pickle data file
+
+
+    def __len__(self):
+        data_file = self.open_data_file()
+        return data_file.root.data.shape[0]
+
+
+    def __getitem__(self, index):
+        """
+        returns a sample with the passed index
+        :param index:   index of the sample
+        :return:        state, policy, value
+        """
+        data_file = self.open_data_file()
+        state = data_file.root.data[2, 0:CONST.STATE_SIZE].reshape(CONST.INPUT_CHANNELS, CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH)
+
+        policy_idx = int(data_file.root.data[2, -2])
+        policy = np.zeros(board_representation.LABEL_COUNT)
+        policy[policy_idx] = 1
+
+        value = data_file.root.data[100, -1]
+
+        return state, policy, value
+
+
+    def open_data_file(self):
+        """
+        opens the file with the data set
+        :return:
+        """
+        return tables.open_file(self.file_path, mode='r', filters=get_compression_filter())

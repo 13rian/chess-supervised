@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 from globals import CONST, Config
+import board_representation
 
 
 
@@ -52,6 +53,32 @@ class ResBlock(nn.Module):
         return out
 
 
+class SEBlock(nn.Module):
+    """
+    defines a squeeze and excitation block (Czech et al. 2019)
+    """
+
+    def __init__(self, n_filters):
+        super(SEBlock, self).__init__()
+        self.conv1 = nn.Conv2d(n_filters, n_filters, kernel_size=3, stride=1, padding=1)  #bias=False
+        self.bn1 = nn.BatchNorm2d(n_filters)
+
+        self.conv2 = nn.Conv2d(n_filters, n_filters, kernel_size=3, stride=1, padding=1)
+        self.bn2 = nn.BatchNorm2d(n_filters)
+
+    def forward(self, x):
+        # save the input for the skip connection
+        residual = x
+
+        # conv1
+        out = F.relu(self.bn1(self.conv1(x)))
+
+        # conv2 with the skip connection
+        out = F.relu(self.bn2(self.conv2(out)) + residual)
+
+        return out
+
+
 
 class OutBlock(nn.Module):
     """
@@ -60,31 +87,32 @@ class OutBlock(nn.Module):
 
     def __init__(self, n_filters):
         super(OutBlock, self).__init__()
-        self.conv1_v = nn.Conv2d(n_filters, 32, kernel_size=1)  # value head
-        self.bn1_v = nn.BatchNorm2d(32)
-        self.fc1_v = nn.Linear(32 * CONST.BOARD_SIZE, 256)
+        self.value_filters = 32
+        self.policy_filters = 32
+
+        self.conv1_v = nn.Conv2d(n_filters, self.value_filters, kernel_size=1)  # value head
+        self.bn1_v = nn.BatchNorm2d(self.value_filters)
+        self.fc1_v = nn.Linear(self.value_filters * CONST.BOARD_SIZE, 256)
         self.fc2_v = nn.Linear(256, 1)
 
-        self.conv1_p = nn.Conv2d(n_filters, 32, kernel_size=1)  # policy head
-        self.bn1_p = nn.BatchNorm2d(32)
-        self.fc1_p = nn.Linear(32 * CONST.BOARD_SIZE, 256)
+        self.conv1_p = nn.Conv2d(n_filters, self.policy_filters, kernel_size=1)  # policy head
+        self.bn1_p = nn.BatchNorm2d(self.policy_filters)
+        self.fc1_p = nn.Linear(self.policy_filters * CONST.BOARD_SIZE, board_representation.LABEL_COUNT)
         self.logsoftmax = nn.LogSoftmax(dim=1)
-        self.fc2_p = nn.Linear(256, 7)
 
 
     def forward(self, x):
         # value head
         v = F.relu(self.bn1_v(self.conv1_v(x)))
-        v = v.view(-1, 32 * CONST.BOARD_SIZE)  # channels*board size
+        v = v.view(-1, self.value_filters * CONST.BOARD_SIZE)  # channels*board size
         v = F.relu(self.fc1_v(v))
-        v = self.fc2_v(v)
+        v = F.relu(self.fc2_v(v))
         v = torch.tanh(v)
 
         # policy head
         p = F.relu(self.bn1_p(self.conv1_p(x)))
-        p = p.view(-1, 32*CONST.BOARD_SIZE)
+        p = p.view(-1, self.policy_filters*CONST.BOARD_SIZE)
         p = F.relu(self.fc1_p(p))
-        p = self.fc2_p(p)
         p = self.logsoftmax(p).exp()
         return p, v
 

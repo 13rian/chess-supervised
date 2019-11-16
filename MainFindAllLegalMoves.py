@@ -3,7 +3,6 @@ import copy
 import chess
 
 
-from globals import CONST
 import board_representation
 
 

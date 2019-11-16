@@ -5,8 +5,11 @@ import chess
 import numpy as np
 
 from utils import utils
-import globals
+from globals import CONST
 import data_processing
+import board_representation
+
+import tables
 
 
 #@utils.profile
@@ -22,51 +25,19 @@ def mainTrain():
 
     logger.debug("start the main test program")
 
-    board = chess.Board()
-    board.push_san("e4")
-    board.push_san("e5")
-    board.push_san("Nf3")
-    board.push_san("Nc6")
-    board.push_san("Bc4")
-    board.push_san("Bc5")
-    board.push_san("Qe2")
-    board.push_san("d6")
-    board.push_san("Nc3")
-    board.push_san("Bd7")
-    board.push_san("b3")
-    board.push_san("Qe7")
-
-    print(board)
-    print(" mirror:")
-    board = board.mirror()
-    print(board)
-
-    print(board.has_queenside_castling_rights(chess.BLACK))
+    filter = data_processing.get_compression_filter()
+    data_file = tables.open_file("king-base-light.h5", mode='r', filters=filter)
 
 
-    import board_representation
-    board = chess.Board()
-    bit_board = board_representation.board_to_matrix(board)
-    print(bit_board[0])
+    print(data_file.root.data.shape[0])
+    state = data_file.root.data[2, 0:CONST.STATE_SIZE]
+    policy_idx = int(data_file.root.data[2, -2])
+    value = data_file.root.data[100, -1]
 
-    board.push_san("e4")
-    bit_board = board_representation.board_to_matrix(board)
-    print(bit_board[0])
-    print(" ")
-    print(bit_board[6])
+    state = state.reshape(CONST.INPUT_CHANNELS, CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH)
 
-
-
-    a = np.array([1, 2, 3])
-    b = np.array([4])
-    c = np.array([5, 6, 7])
-    print(np.concatenate((a, b, c)))
-
-    try:
-        1 / 0
-    except Exception as e:
-        logging.error("error: {}".format(e))  # ERROR:root:division by zero
-
+    policy = np.zeros(board_representation.LABEL_COUNT)
+    policy[policy_idx] = 1
 
 
     pgn_file = open("pgns/KingBaseLite2019-B00-B19.pgn")

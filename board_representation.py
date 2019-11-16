@@ -226,11 +226,23 @@ def policy_to_move(policy):
     :return:            chess move object
     """
     # get the move with the highest probability
-    move_index = np.argmax(policy)
-    uci_move = WHITE_MOVE_LABELS[move_index]
+    move_idx = np.argmax(policy)
+    uci_move = WHITE_MOVE_LABELS[move_idx]
     return chess.Move.from_uci(uci_move)
 
 
+def move_index(move, turn=chess.WHITE):
+    """
+    returns the index of the passed chess move
+    :param move:    chess move object
+    :param turn:    the turn of the current player
+    :return:
+    """
+    # mirror the the moves for the black player since the board is always viewed from the white perspective
+    if turn == chess.BLACK:
+        move = mirror_move(move)
+
+    return WHITE_MOVE_TABLE[move.uci()]
 
 
 ########################################################################################################
