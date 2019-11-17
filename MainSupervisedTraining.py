@@ -3,6 +3,7 @@ from torch.utils import data
 import random
 import numpy as np
 import logging
+import torch
 
 
 from utils import utils
@@ -28,15 +29,15 @@ def mainTrain():
     # parameters
     Config.learning_rate = 0.001
     Config.weight_decay = 1e-4
-    Config.n_blocks = 5
+    Config.n_blocks = 10
     Config.n_filters = 256
     epochs = 3
-    training_set_path = "king-base-light.h5"
+    training_set_path = "king-base-light-games.h5"
 
     # define the parameters for the training
-    params = {'batch_size': 256,
+    params = {'batch_size': 512,
               'shuffle': True,
-              'num_workers': 1}
+              'num_workers': 8}
 
 
     # create the data set class
@@ -67,12 +68,11 @@ def mainTrain():
         tot_batch_count = 0
 
         # training
-        batch_idx = 0
-        for state_batch, value_batch, policy_batch in training_generator:
+        for state_batch, policy_batch, value_batch in training_generator:
             # send the data to the gpu
-            state_batch = state_batch.to(Config.training_device)
-            value_batch = value_batch.to(Config.training_device)
-            policy_batch = policy_batch.to(Config.training_device)
+            state_batch = state_batch.to(Config.training_device, dtype=torch.float)
+            value_batch = value_batch.unsqueeze(1).to(Config.training_device, dtype=torch.float)
+            policy_batch = policy_batch.to(Config.training_device, dtype=torch.float)
 
             # execute one training step
             loss_p, loss_v = network.train_step(state_batch, policy_batch, value_batch)
@@ -80,8 +80,8 @@ def mainTrain():
             avg_loss_v += loss_v
             tot_batch_count += 1
 
-            if batch_idx % 100 == 0:
-                logger.debug("epoch {}: trained {} batches so far".format(epoch, batch_idx))
+            if tot_batch_count % 10 == 0:
+                logger.debug("epoch {}: trained {} batches so far".format(epoch, tot_batch_count))
 
         logger.debug("epoch {}: finished training".format(epoch))
 

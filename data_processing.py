@@ -82,7 +82,7 @@ def create_data_set():
             game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
 
             game_count += 1
-            if game_count % 100 == 0:
+            if game_count % 5000 == 0:
                 logger.debug("processed {} games".format(game_count))
 
         pgn_file.close()
@@ -138,12 +138,14 @@ class Dataset(data.Dataset):
         :param file_path:      path to the data set file
         """
         self.file_path = file_path
-        # self.data_file = None         cannot pickle data file
+        self.data_file = None
 
+        data_file = self.open_data_file()
+        self.size = data_file.root.data.shape[0]
+        data_file.close()
 
     def __len__(self):
-        data_file = self.open_data_file()
-        return data_file.root.data.shape[0]
+        return self.size
 
 
     def __getitem__(self, index):
@@ -152,14 +154,16 @@ class Dataset(data.Dataset):
         :param index:   index of the sample
         :return:        state, policy, value
         """
-        data_file = self.open_data_file()
-        state = data_file.root.data[2, 0:CONST.STATE_SIZE].reshape(CONST.INPUT_CHANNELS, CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH)
+        if self.data_file is None:
+            self.data_file = self.open_data_file()
 
-        policy_idx = int(data_file.root.data[2, -2])
+        state = self.data_file.root.data[index, 0:CONST.STATE_SIZE].reshape(CONST.INPUT_CHANNELS, CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH)
+
+        policy_idx = int(self.data_file.root.data[index, -2])
         policy = np.zeros(board_representation.LABEL_COUNT)
         policy[policy_idx] = 1
 
-        value = data_file.root.data[100, -1]
+        value = self.data_file.root.data[index, -1]
 
         return state, policy, value
 

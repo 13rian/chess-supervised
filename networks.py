@@ -18,8 +18,7 @@ class ConvBlock(nn.Module):
 
     def __init__(self, n_filters):
         super(ConvBlock, self).__init__()
-        self.action_size = 7
-        self.conv1 = nn.Conv2d(2, n_filters, kernel_size=3, padding=1, stride=1)
+        self.conv1 = nn.Conv2d(CONST.INPUT_CHANNELS, n_filters, kernel_size=3, padding=1, stride=1)
         self.bn1 = nn.BatchNorm2d(n_filters)
 
     def forward(self, x):
@@ -182,7 +181,7 @@ class ResNet(nn.Module):
         # loss_p = - torch.sum(target_p * torch.log(1e-8 + prediction_p), 1).mean() / target_p.shape[1]
         loss_p = - torch.sum(target_p * torch.log(1e-8 + prediction_p), 1).mean()
         loss_v = criterion_v(prediction_v, target_v)
-        loss = loss_p + loss_v
+        loss = loss_p + 0.01*loss_v
         loss.backward()  # back propagation
         self.optimizer.step()  # make one optimization step
         return loss_p, loss_v
