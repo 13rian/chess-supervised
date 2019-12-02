@@ -9,4 +9,5 @@ __pycache__/
 /data_set_raw
 *.pgn
 *.h5
+*.db
 profile.txt

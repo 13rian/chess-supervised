@@ -12,6 +12,15 @@ import board_representation
 import tables
 
 
+class Position(tables.IsDescription):
+    fen = tables.StringCol(88)   # 16-character String for the fen notation
+    net_input = tables.e
+    move_idx = tables.UInt16Col()       # index of the move
+    value = tables.Int8Col()            # value of the position
+
+
+
+
 #@utils.profile
 def mainTrain():
     # The logger
@@ -24,10 +33,6 @@ def mainTrain():
     np.random.seed(seed=None)
 
     logger.debug("start the main test program")
-
-
-    test_str = "_5_6"
-    print(test_str.split("_"))
 
 
     # get the fen string of a board

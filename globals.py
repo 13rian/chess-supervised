@@ -34,10 +34,10 @@ class Config:
     temp = 1  				# the temperature, controls the policy value distribution
     temp_threshold = 42  	# up to this move the temp will be temp, otherwise 0 (deterministic play)
     alpha_dirich = 1  		# alpha parameter for the dirichlet noise (0.03 - 0.3 az paper, 10/ avg n_moves) 0.3
-    n_filters = 128  		# the number of filters in the conv layers 128
+    n_filters = 64  		# the number of filters in the conv layers 128
     learning_rate = 0.001  	# the learning rate of the neural network
     weight_decay = 1e-4     # weight decay to prevent overfitting, should be twice as large as L2 regularization const
-    n_blocks = 10  			# number of residual blocks
+    n_blocks = 5  			# number of residual blocks
     batch_size = 256  		# the batch size of the experience buffer for the neural network training
 
 
