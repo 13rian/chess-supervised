@@ -105,13 +105,13 @@ class OutBlock(nn.Module):
         v = F.relu(self.bn1_v(self.conv1_v(x)))
         v = v.view(-1, self.value_filters * CONST.BOARD_SIZE)  # channels*board size
         v = F.relu(self.fc1_v(v))
-        v = F.relu(self.fc2_v(v))
+        v = self.fc2_v(v)
         v = torch.tanh(v)
 
         # policy head
         p = F.relu(self.bn1_p(self.conv1_p(x)))
         p = p.view(-1, self.policy_filters*CONST.BOARD_SIZE)
-        p = F.relu(self.fc1_p(p))
+        p = self.fc1_p(p)
         p = self.logsoftmax(p).exp()
         return p, v
 
