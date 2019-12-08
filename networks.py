@@ -58,7 +58,7 @@ class AzOutBlock(nn.Module):
     """
 
     def __init__(self, n_filters):
-        super(OutBlock, self).__init__()
+        super(AzOutBlock, self).__init__()
         self.value_filters = 32
         self.policy_filters = 32
 
@@ -176,9 +176,11 @@ class SeBlock(nn.Module):
         :param r:               the ratio for the squeeze operation
         """
         super(SeBlock, self).__init__()
+        self.n_channels = n_channels
+
         self.avg_pooling = nn.AvgPool2d(CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH)
-        self.fc1 = nn.Linear(n_channels, n_channels / r)
-        self.fc2 = nn.Linear(n_channels / r, n_channels)
+        self.fc1 = nn.Linear(n_channels, n_channels // r)
+        self.fc2 = nn.Linear(n_channels // r, n_channels)
 
     def forward(self, x):
         # save the input for the skip connection
@@ -189,10 +191,12 @@ class SeBlock(nn.Module):
         # x = torch.mean(x, (2, 3), keepdim=True)
 
         # excitation operation
+        x = x.view(-1, self.n_channels)
         x = F.relu(self.fc1(x))
         x = F.sigmoid(self.fc2(x))
 
         # scale the original input
+        x = x.unsqueeze(2).unsqueeze(3)
         x = data * x
         return x
 
@@ -215,7 +219,7 @@ class MobileBlock(nn.Module):
         self.conv1 = nn.Conv2d(n_channels, n_mobile_filters, kernel_size=1)
         self.bn1 = nn.BatchNorm2d(n_mobile_filters)
 
-        self.conv2 = nn.Conv2d(n_mobile_filters, n_mobile_filters, kernel_size=3, groups=n_mobile_filters)
+        self.conv2 = nn.Conv2d(n_mobile_filters, n_mobile_filters, kernel_size=3, groups=n_mobile_filters, padding=1, stride=1)
         self.bn2 = nn.BatchNorm2d(n_mobile_filters)
 
         self.conv3 = nn.Conv2d(n_mobile_filters, n_channels, kernel_size=1)
@@ -276,6 +280,7 @@ class OutBlock(nn.Module):
 class RiseNet(nn.Module):
     def __init__(self, learning_rate, n_blocks, n_se_blocks, n_filters, se_ratio, n_mobile_filters, n_filter_inc, weight_decay=0):
         super(RiseNet, self).__init__()
+        self.n_blocks = n_blocks
 
         # initial convolutional block
         self.conv = ConvBlock(n_filters)

@@ -6,9 +6,11 @@ import torch
 import numpy as np
 
 from utils import utils
-from globals import CONST
+from globals import CONST, Config
 import data_processing
 import board_representation
+import networks
+import data_storage
 
 import tables
 
@@ -26,11 +28,21 @@ def mainTrain():
 
     logger.debug("start the main test program")
 
-    tensor = torch.rand(3, 2)
-    print(tensor)
+    # test the rise network
+    network = networks.RiseNet(Config.learning_rate, Config.n_blocks, Config.n_se_blocks, Config.n_filters,
+                               Config.se_ratio, Config.n_mobile_filters, Config.n_filter_inc, Config.weight_decay)
+    network = data_storage.net_to_device(network, Config.training_device)
 
-    meanT = torch.mean(tensor, (1), keepdim=True)
-    print(meanT)
+    board = chess.Board()
+    input = board_representation.board_to_matrix(board)
+    input = torch.tensor(input)
+    input = input.to(Config.training_device, dtype=torch.float)
+    input = input.unsqueeze(0)
+
+
+    res = network(input)
+
+
 
 
 

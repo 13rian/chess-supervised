@@ -29,7 +29,7 @@ def net_to_device(net, device):
     # put the model on the gpu
     if device.type == "cuda":
         torch.save({'state_dict': net.state_dict()}, net_path)
-        cuda_net = networks.ResNet(Config.learning_rate, Config.n_blocks, Config.n_filters, Config.weight_decay)
+        cuda_net = net
         cuda_net.cuda()
         checkpoint = torch.load(net_path, map_location='cuda')
         cuda_net.load_state_dict(checkpoint['state_dict'])
@@ -39,7 +39,7 @@ def net_to_device(net, device):
     # put the model on the cpu
     if device.type == "cpu":
         torch.save({'state_dict': net.state_dict()}, net_path)
-        cpu_net = networks.ResNet(Config.learning_rate, Config.n_blocks, Config.n_filters, Config.weight_decay)
+        cpu_net = net
         checkpoint = torch.load(net_path, map_location='cpu')
         cpu_net.load_state_dict(checkpoint['state_dict'])
         shutil.rmtree(temp_dir)
