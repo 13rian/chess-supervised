@@ -1,6 +1,7 @@
 import logging
 import random
 import chess
+import torch
 
 import numpy as np
 
@@ -24,6 +25,13 @@ def mainTrain():
     np.random.seed(seed=None)
 
     logger.debug("start the main test program")
+
+    tensor = torch.rand(3, 2)
+    print(tensor)
+
+    meanT = torch.mean(tensor, (1), keepdim=True)
+    print(meanT)
+
 
 
     test_str = "_5_6"
