@@ -18,6 +18,44 @@ def net_to_device(net, device):
     :param device:  the device to which the network is sent
     :return:
     """
+    # net_path = "{}/temp_net.pt".format(temp_dir)
+    #
+    # # ensure that the temp dir exists and is empty and
+    # if os.path.exists(temp_dir):
+    #     shutil.rmtree(temp_dir)
+    # os.makedirs(temp_dir)
+    #
+    #
+    # # put the model on the gpu
+    # if device.type == "cuda":
+    #     torch.save({'state_dict': net.state_dict()}, net_path)
+    #     cuda_net = net
+    #     cuda_net.cuda()
+    #     checkpoint = torch.load(net_path, map_location='cuda')
+    #     cuda_net.load_state_dict(checkpoint['state_dict'])
+    #     shutil.rmtree(temp_dir)
+    #     return cuda_net
+    #
+    # # put the model on the cpu
+    # if device.type == "cpu":
+    #     torch.save({'state_dict': net.state_dict()}, net_path)
+    #     cpu_net = net
+    #     checkpoint = torch.load(net_path, map_location='cpu')
+    #     cpu_net.load_state_dict(checkpoint['state_dict'])
+    #     shutil.rmtree(temp_dir)
+    #     return cpu_net
+    #
+    # logger.error("device type {} is not known".format(device.type))
+    # return None
+
+
+    # temp_net_dir = "{}/{}".format(temp_dir, uuid.uuid4().hex)
+    # net_path = "{}/temp_net.pt".format(temp_net_dir)
+    # if os.path.exists(net_path):
+    #     shutil.rmtree(net_path)
+    # os.makedirs(net_path)
+
+
     net_path = "{}/temp_net.pt".format(temp_dir)
 
     # ensure that the temp dir exists and is empty and
@@ -28,20 +66,15 @@ def net_to_device(net, device):
 
     # put the model on the gpu
     if device.type == "cuda":
-        torch.save({'state_dict': net.state_dict()}, net_path)
-        cuda_net = net
-        cuda_net.cuda()
-        checkpoint = torch.load(net_path, map_location='cuda')
-        cuda_net.load_state_dict(checkpoint['state_dict'])
+        torch.save(net, net_path)
+        cuda_net = torch.load(net_path, map_location='cuda')
         shutil.rmtree(temp_dir)
         return cuda_net
 
     # put the model on the cpu
     if device.type == "cpu":
-        torch.save({'state_dict': net.state_dict()}, net_path)
-        cpu_net = net
-        checkpoint = torch.load(net_path, map_location='cpu')
-        cpu_net.load_state_dict(checkpoint['state_dict'])
+        torch.save(net, net_path)
+        cpu_net = torch.load(net_path, map_location='cpu')
         shutil.rmtree(temp_dir)
         return cpu_net
 
