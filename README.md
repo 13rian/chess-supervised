@@ -1,5 +1,17 @@
-# Learning to Play Chess with Supervised Learning 
+# Learning to play chess with supervised learning
 
 
 ## Goal of this Project 
-The idea of this project are taken from the paper https://arxiv.org/abs/1908.06660 which uses supervised learning to create a alpha zero like network. The network is then used for the MCTS to make moves during games. 
+The idea of this project is to apply the alpha zero algorithm to connect4.
+
+Links:
+https://towardsdatascience.com/from-scratch-implementation-of-alphazero-for-connect4-f73d4554002a
+
+https://medium.com/oracledevs/lessons-from-implementing-alphazero-7e36e9054191
+
+https://github.com/suragnair/alpha-zero-general
+
+http://blog.gamesolver.org/solving-connect-four/01-introduction/
+
+original paper alpha zero:
+https://arxiv.org/abs/1712.01815
