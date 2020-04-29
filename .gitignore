@@ -8,6 +8,8 @@ __pycache__/
 .pydevproject
 /data_set_raw
 *.pgn
+*.bz2
+*.txt
 *.h5
 *.db
 profile.txt
