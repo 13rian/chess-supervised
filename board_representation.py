@@ -3,8 +3,7 @@ import copy
 import numpy as np
 import chess
 
-from globals import CONST
-
+from globals import CONST, PlaneIndex
 
 
 ########################################################################################################
@@ -277,84 +276,84 @@ def board_to_matrix(board):
     black_mask = board.occupied_co[chess.BLACK]
 
     # white pieces
-    bit_board[0] = int_to_board(board.pawns & white_mask)
-    bit_board[1] = int_to_board(board.knights & white_mask)
-    bit_board[2] = int_to_board(board.bishops & white_mask)
-    bit_board[3] = int_to_board(board.rooks & white_mask)
-    bit_board[4] = int_to_board(board.queens & white_mask)
-    bit_board[5] = int_to_board(board.kings & white_mask)
+    bit_board[PlaneIndex.white_pawns] = int_to_board(board.pawns & white_mask)
+    bit_board[PlaneIndex.white_knights] = int_to_board(board.knights & white_mask)
+    bit_board[PlaneIndex.white_bishops] = int_to_board(board.bishops & white_mask)
+    bit_board[PlaneIndex.white_rooks] = int_to_board(board.rooks & white_mask)
+    bit_board[PlaneIndex.white_queens] = int_to_board(board.queens & white_mask)
+    bit_board[PlaneIndex.white_kings] = int_to_board(board.kings & white_mask)
 
     # black pieces
-    bit_board[6] = int_to_board(board.pawns & black_mask)
-    bit_board[7] = int_to_board(board.knights & black_mask)
-    bit_board[8] = int_to_board(board.bishops & black_mask)
-    bit_board[9] = int_to_board(board.rooks & black_mask)
-    bit_board[10] = int_to_board(board.queens & black_mask)
-    bit_board[11] = int_to_board(board.kings & black_mask)
+    bit_board[PlaneIndex.black_pawns] = int_to_board(board.pawns & black_mask)
+    bit_board[PlaneIndex.black_knights] = int_to_board(board.knights & black_mask)
+    bit_board[PlaneIndex.black_bishops] = int_to_board(board.bishops & black_mask)
+    bit_board[PlaneIndex.black_rooks] = int_to_board(board.rooks & black_mask)
+    bit_board[PlaneIndex.black_queens] = int_to_board(board.queens & black_mask)
+    bit_board[PlaneIndex.black_kings] = int_to_board(board.kings & black_mask)
 
 
     # repetitions 2 planes
     # first repetition
     if board.is_repetition(2):
-        bit_board[12] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.rep2] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
     else:
-        bit_board[12] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.rep2] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
     # second repetition
     if board.is_repetition(3):
-        bit_board[13] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.rep3] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
     else:
-        bit_board[13] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.rep3] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
     # en-passant: square where en-passant capture is possible
     if board.ep_square is not None:
-        bit_board[14] = int_to_board(1 << board.ep_square)
+        bit_board[PlaneIndex.en_passant] = int_to_board(1 << board.ep_square)
     else:
-        bit_board[14] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.en_passant] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
-    # player color board
-    if board.turn == chess.WHITE:
-        bit_board[15] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
-    else:
-        bit_board[15] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+    # # player color board, since the board is always represented form the white perspective this makes no sense
+    # if board.turn == chess.WHITE:
+    #     bit_board[15] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+    # else:
+    #     bit_board[15] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
     # total move count
-    bit_board[16] = board.fullmove_number/CONST.MAX_TOTAL_MOVES * np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+    bit_board[PlaneIndex.tot_moves] = board.fullmove_number/CONST.MAX_TOTAL_MOVES * np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
     # white castling
     # kingside
     if board.has_kingside_castling_rights(chess.WHITE):
-        bit_board[17] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.white_castling_kingside] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
     else:
-        bit_board[17] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.white_castling_kingside] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
     # queenside
     if board.has_queenside_castling_rights(chess.WHITE):
-        bit_board[18] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.white_castling_queenside] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
     else:
-        bit_board[18] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.white_castling_queenside] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
     # black castling
     # kingside
     if board.has_kingside_castling_rights(chess.BLACK):
-        bit_board[19] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.black_castling_kingside] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
     else:
-        bit_board[19] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.black_castling_kingside] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
     # queenside
     if board.has_queenside_castling_rights(chess.BLACK):
-        bit_board[20] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.black_castling_queenside] = np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
     else:
-        bit_board[20] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+        bit_board[PlaneIndex.black_castling_queenside] = np.zeros((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
 
     # no progress count
-    bit_board[21] = board.halfmove_clock/CONST.MAX_PROGRESS_COUNTER * np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
+    bit_board[PlaneIndex.no_progress_count] = board.halfmove_clock/CONST.MAX_PROGRESS_COUNTER * np.ones((CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH))
 
     return bit_board

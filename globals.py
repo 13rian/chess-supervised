@@ -8,13 +8,39 @@ class CONST:
     BOARD_WIDTH = 8 	    				    # the width of the board (number of columns)
     BOARD_HEIGHT = 8						    # the height of the board
     BOARD_SIZE = BOARD_WIDTH * BOARD_HEIGHT     # the size of the board
-    INPUT_CHANNELS = 22 				        # the number of feature planes used for the input representation
+    INPUT_CHANNELS = 21 				        # the number of feature planes used for the input representation
     STATE_SIZE = INPUT_CHANNELS * BOARD_SIZE    # the number of state variables
     POLICY_SIZE = 1880                          # the number of all possible chess moves
 
     # normalization constants
     MAX_TOTAL_MOVES = 500 					    # normalization constant for the number of moves played
     MAX_PROGRESS_COUNTER = 40 				    # normalization constant for the half move clock
+
+
+class PlaneIndex:
+    white_pawns = 0
+    white_knights = 1
+    white_bishops = 2
+    white_rooks = 3
+    white_queens = 4
+    white_kings = 5
+
+    black_pawns = 6
+    black_knights = 7
+    black_bishops = 8
+    black_rooks = 9
+    black_queens = 10
+    black_kings = 11
+
+    rep2 = 12
+    rep3 = 13
+    en_passant = 14
+    tot_moves = 15
+    white_castling_kingside = 16
+    white_castling_queenside = 17
+    black_castling_kingside = 18
+    black_castling_queenside = 19
+    no_progress_count = 20
 
 
 class Config:

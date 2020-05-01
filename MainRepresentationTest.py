@@ -6,40 +6,13 @@ import numpy as np
 import chess.pgn
 
 from utils import utils
-from globals import CONST
+from globals import CONST, PlaneIndex
 import board_representation
 
 
 # The logger
 utils.init_logger(logging.DEBUG, file_name="log/chess_sl.log")
 logger = logging.getLogger('Chess_SL')
-
-
-# define all indices with the features
-idx_white_pawns = 0
-idx_white_knights = 1
-idx_white_bishops = 2
-idx_white_rooks = 3
-idx_white_queens = 4
-idx_white_kings = 5
-
-idx_black_pawns = 6
-idx_black_knights = 7
-idx_black_bishops = 8
-idx_black_rooks = 9
-idx_black_queens = 10
-idx_black_kings = 11
-
-idx_rep2 = 12
-idx_rep3 = 13
-idx_en_passant = 14
-idx_color = 15
-idx_tot_moves = 16
-idx_white_castling_kingside = 17
-idx_white_castling_queenside = 18
-idx_black_castling_kingside = 19
-idx_black_castling_queenside = 20
-idx_no_progress_count = 21
 
 
 
@@ -65,53 +38,53 @@ bit_board = board_representation.board_to_matrix(board)
 
 ################################# white pieces
 # white pawn on b3
-if bit_board[idx_white_pawns][5][1] < 0.9:
+if bit_board[PlaneIndex.white_pawns][5][1] < 0.9:
     logger.error("white pawn is not on b3")
 
 # white knight on c3
-if bit_board[idx_white_knights][5][2] < 0.9:
+if bit_board[PlaneIndex.white_knights][5][2] < 0.9:
     logger.error("white knight is not on c3")
 
 # white bishop on c1
-if bit_board[idx_white_bishops][7][2] < 0.9:
+if bit_board[PlaneIndex.white_bishops][7][2] < 0.9:
     logger.error("white bishop is not on c1")
 
 # white rook on a1
-if bit_board[idx_white_rooks][7][0] < 0.9:
+if bit_board[PlaneIndex.white_rooks][7][0] < 0.9:
     logger.error("white rook is not on a1")
 
 # white queen on e2
-if bit_board[idx_white_queens][6][4] < 0.9:
+if bit_board[PlaneIndex.white_queens][6][4] < 0.9:
     logger.error("white queen is not on e2")
 
 # white king on e1
-if bit_board[idx_white_kings][7][4] < 0.9:
+if bit_board[PlaneIndex.white_kings][7][4] < 0.9:
     logger.error("white king is not on e1")
 
 
 ################################# black pieces
 # black pawn on d6
-if bit_board[idx_black_pawns][2][3] < 0.9:
+if bit_board[PlaneIndex.black_pawns][2][3] < 0.9:
     logger.error("black pawn is not on d6")
 
 # black knight on g8
-if bit_board[idx_black_knights][0][6] < 0.9:
+if bit_board[PlaneIndex.black_knights][0][6] < 0.9:
     logger.error("black knight is not on g8")
 
 # black bishop on d7
-if bit_board[idx_black_bishops][1][3] < 0.9:
+if bit_board[PlaneIndex.black_bishops][1][3] < 0.9:
     logger.error("black bishop is not on d7")
 
 # black rook on h8
-if bit_board[idx_black_rooks][0][7] < 0.9:
+if bit_board[PlaneIndex.black_rooks][0][7] < 0.9:
     logger.error("black rook is not on h8")
 
 # black queen on e7
-if bit_board[idx_black_queens][1][4] < 0.9:
+if bit_board[PlaneIndex.black_queens][1][4] < 0.9:
     logger.error("black queen is not on e7")
 
 # black king on e8
-if bit_board[idx_black_kings][0][4] < 0.9:
+if bit_board[PlaneIndex.black_kings][0][4] < 0.9:
     logger.error("black king is not on e8")
 
 
@@ -128,10 +101,10 @@ board.push_san("Nc6")
 bit_board = board_representation.board_to_matrix(board)
 
 # both repetitions should be zero
-if np.sum(bit_board[idx_rep2]) > 0.1:
+if np.sum(bit_board[PlaneIndex.rep2]) > 0.1:
     logger.error("no repetition: first repetition feature is not 0")
 
-if np.sum(bit_board[idx_rep3]) > 0.1:
+if np.sum(bit_board[PlaneIndex.rep3]) > 0.1:
     logger.error("no repetition: second repetition feature is not 0")
 
 
@@ -141,10 +114,10 @@ board.push_san("Ng1")
 board.push_san("Nb8")
 bit_board = board_representation.board_to_matrix(board)
 
-if np.sum(bit_board[idx_rep2]) < 63.9:
+if np.sum(bit_board[PlaneIndex.rep2]) < 63.9:
     logger.error("one repetition: first repetition feature is not 1")
 
-if np.sum(bit_board[idx_rep3]) > 0.1:
+if np.sum(bit_board[PlaneIndex.rep3]) > 0.1:
     logger.error("one repetition: second repetition feature is not 0")
 
 
@@ -155,10 +128,10 @@ board.push_san("Ng1")
 board.push_san("Nb8")
 bit_board = board_representation.board_to_matrix(board)
 
-if np.sum(bit_board[idx_rep2]) < 63.9:
+if np.sum(bit_board[PlaneIndex.rep2]) < 63.9:
     logger.error("two repetition: first repetition feature is not 1")
 
-if np.sum(bit_board[idx_rep3]) < 63.9:
+if np.sum(bit_board[PlaneIndex.rep3]) < 63.9:
     logger.error("two repetition: second repetition feature is not 1")
 
 
@@ -175,30 +148,9 @@ bit_board = board_representation.board_to_matrix(board)
 
 
 # en passant square is c6
-if bit_board[idx_en_passant][2][2] < 0.9:
+if bit_board[PlaneIndex.en_passant][2][2] < 0.9:
     logger.error("en passant square is not c6")
 
-
-
-
-########################################################################################
-#                                   en passant                                         #
-########################################################################################
-board = chess.Board()
-board.push_san("b4")
-bit_board = board_representation.board_to_matrix(board)
-
-# black to move
-if np.sum(bit_board[idx_color]) > 0.1:
-    logger.error("black to move: move feature is not 0")
-
-
-board.push_san("e5")
-bit_board = board_representation.board_to_matrix(board)
-
-# white to move
-if np.sum(bit_board[idx_color]) < 63.9:
-    logger.error("white to move: move feature is not 1")
 
 
 
@@ -215,7 +167,7 @@ board.push_san("e6")        # 3. move
 board.push_san("Bg2")       # 4. move
 bit_board = board_representation.board_to_matrix(board)
 
-if np.sum(bit_board[idx_tot_moves]) * CONST.MAX_TOTAL_MOVES < 3.9:
+if np.sum(bit_board[PlaneIndex.tot_moves]) * CONST.MAX_TOTAL_MOVES < 3.9:
     logger.error("position is in the 4th move but the feature is not set to 5")
 
 
@@ -241,19 +193,19 @@ bit_board = board_representation.board_to_matrix(board)
 
 
 # white kingside castling
-if np.sum(bit_board[idx_white_castling_kingside]) < 63.9:
+if np.sum(bit_board[PlaneIndex.white_castling_kingside]) < 63.9:
     logger.error("white can castle kingside: castle feature is not 1")
 
 # white queenside castling
-if np.sum(bit_board[idx_white_castling_queenside]) < 63.9:
+if np.sum(bit_board[PlaneIndex.white_castling_queenside]) < 63.9:
     logger.error("white can castle queenside: castle feature is not 1")
 
 # black kingside castling
-if np.sum(bit_board[idx_black_castling_kingside]) < 63.9:
+if np.sum(bit_board[PlaneIndex.black_castling_kingside]) < 63.9:
     logger.error("black can castle kingside: castle feature is not 1")
 
 # black queenside castling
-if np.sum(bit_board[idx_black_castling_queenside]) < 63.9:
+if np.sum(bit_board[PlaneIndex.black_castling_queenside]) < 63.9:
     logger.error("black can castle queenside: castle feature is not 1")
 
 
@@ -263,19 +215,19 @@ board.push_san("Rb8")
 bit_board = board_representation.board_to_matrix(board)
 
 # white kingside castling
-if np.sum(bit_board[idx_white_castling_kingside]) > 0.1:
+if np.sum(bit_board[PlaneIndex.white_castling_kingside]) > 0.1:
     logger.error("white can not castle kingside: castle feature is not 0")
 
 # white queenside castling
-if np.sum(bit_board[idx_white_castling_queenside]) < 63.9:
+if np.sum(bit_board[PlaneIndex.white_castling_queenside]) < 63.9:
     logger.error("white can castle queenside: castle feature is not 1")
 
 # black kingside castling
-if np.sum(bit_board[idx_black_castling_kingside]) < 63.9:
+if np.sum(bit_board[PlaneIndex.black_castling_kingside]) < 63.9:
     logger.error("black can castle kingside: castle feature is not 1")
 
 # black queenside castling
-if np.sum(bit_board[idx_black_castling_queenside]) > 0.1:
+if np.sum(bit_board[PlaneIndex.black_castling_queenside]) > 0.1:
     logger.error("black can not castle queenside: castle feature is not 0")
 
 
@@ -286,19 +238,19 @@ bit_board = board_representation.board_to_matrix(board)
 
 
 # white kingside castling
-if np.sum(bit_board[idx_white_castling_kingside]) > 0.1:
+if np.sum(bit_board[PlaneIndex.white_castling_kingside]) > 0.1:
     logger.error("white can not castle kingside: castle feature is not 0")
 
 # white queenside castling
-if np.sum(bit_board[idx_white_castling_queenside]) > 0.1:
+if np.sum(bit_board[PlaneIndex.white_castling_queenside]) > 0.1:
     logger.error("white can not castle queenside: castle feature is not 0")
 
 # black kingside castling
-if np.sum(bit_board[idx_black_castling_kingside]) > 0.1:
+if np.sum(bit_board[PlaneIndex.black_castling_kingside]) > 0.1:
     logger.error("black can not castle kingside: castle feature is not 0")
 
 # black queenside castling
-if np.sum(bit_board[idx_black_castling_queenside]) > 0.1:
+if np.sum(bit_board[PlaneIndex.black_castling_queenside]) > 0.1:
     logger.error("black can not castle queenside: castle feature is not 0")
 
 
@@ -316,7 +268,7 @@ bit_board = board_representation.board_to_matrix(board)
 
 
 # no progress count is two since the last two half moves no piece was captured and no pawn moved
-if np.sum(bit_board[idx_no_progress_count]) * CONST.MAX_PROGRESS_COUNTER < 1.9:
+if np.sum(bit_board[PlaneIndex.no_progress_count]) * CONST.MAX_PROGRESS_COUNTER < 1.9:
     logger.error("no progress count should be 2 but is smaller")
 
 
@@ -325,7 +277,7 @@ board.push_san("b4")
 bit_board = board_representation.board_to_matrix(board)
 
 # progress count should be 0
-if np.sum(bit_board[idx_no_progress_count]) * CONST.MAX_PROGRESS_COUNTER > 0.1:
+if np.sum(bit_board[PlaneIndex.no_progress_count]) * CONST.MAX_PROGRESS_COUNTER > 0.1:
     logger.error("no progress count should be 0 but is larger")
 
 

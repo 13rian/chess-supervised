@@ -16,20 +16,19 @@ from globals import CONST
 logger = logging.getLogger('DataProc')
 
 
-pgn_dir = "pgns"                            # directory that contains all the pgn files for the data set
-# fen_dict_file = 'fen_dict.pk'
-
 
 # row size is number of channels + policy + value
 full_example_size = CONST.INPUT_CHANNELS * CONST.BOARD_HEIGHT * CONST.BOARD_WIDTH + 1 + 1
 avg_example_size = CONST.INPUT_CHANNELS * CONST.BOARD_HEIGHT * CONST.BOARD_WIDTH + board_representation.LABEL_COUNT + 1
 
 
-def create_fen_db(db_file):
+def create_fen_db(db_file, pgn_dir, elo_threshold=0):
     """
     saves all positions in a sqlite db, moves and results are added to the same position with _
     as a delimiter
-    :param db_file:     the file path to the db file to create
+    :param db_file:         the file path to the db file to create
+    :param pgn_dir:         the directory from which all the pgns are read
+    :param elo_threshold:   minimal elo of the weaker player
     :return:
     """
     # check if the file already exists
@@ -50,6 +49,9 @@ def create_fen_db(db_file):
     path_list = os.listdir(pgn_dir)
     game_count = 0
     for pgn_file_name in path_list:
+        if not pgn_file_name.endswith(".pgn"):
+            continue
+
         pgn_file_path = pgn_dir + "/" + pgn_file_name
         pgn_file = open(pgn_file_path)
         logger.info("start to process file {}".format(pgn_file_name))
@@ -59,6 +61,12 @@ def create_fen_db(db_file):
         game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
         while game is not None:
             board = chess.Board()               # create a new board
+
+            # skip games below elo threshold
+            min_elo = min(game.headers["WhiteElo"], game.headers["BlackElo"])
+            if int(min_elo) < elo_threshold:
+                game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
+                continue
 
             # get the value of the game
             result = value_from_result(game.headers["Result"])
@@ -193,7 +201,7 @@ def create_averaged_data_set(db_file, data_set_file):
 
 
 
-def create_data_set(data_set_file):
+def create_data_set(data_set_file, pgn_dir):
     """
     creates the data set from all games in the pgn folder
     the data set is in hdf5 format and compressed because most of the matrices are sparse
