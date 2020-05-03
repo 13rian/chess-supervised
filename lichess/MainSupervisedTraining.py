@@ -30,11 +30,11 @@ def mainTrain():
 
     # parameters
     variant = "threeCheck"
-    Config.learning_rate = 0.001
+    Config.learning_rate = 0.0001
     Config.weight_decay = 1e-4
     Config.n_blocks = 10
     Config.n_filters = 128
-    epochs = 1
+    epochs = 3
     training_set_path = "positions-avg" + variant + ".h5"
     network_dir = "networks/" + variant
     training_progress_dir = "training_progress/" + variant
@@ -64,7 +64,6 @@ def mainTrain():
 
 
     # list for the plots
-    epoch_list = []
     batches = []
     policy_loss = []
     value_loss = []
@@ -77,8 +76,6 @@ def mainTrain():
     # execute the training by looping over all epochs
     network.train()
     for epoch in range(epochs):
-        epoch_list.append(epoch)
-
         # training
         for state_batch, policy_batch, value_batch in training_generator:
             # send the data to the gpu
