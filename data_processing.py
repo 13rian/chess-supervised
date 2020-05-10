@@ -78,7 +78,7 @@ def create_fen_db(db_file, pgn_dir, elo_threshold=0):
             for move in game.mainline_moves():
                 try:
                     fen = board.fen()
-                    move_idx = board_representation.move_index(move, board.turn)
+                    move_idx = board_representation.move_to_index(move, board.turn)
 
                     # define the db update
                     position = (fen, '')
@@ -248,7 +248,7 @@ def create_data_set(data_set_file, pgn_dir):
                 try:
                     network_input = board_representation.board_to_matrix(board)
                     network_input = network_input.flatten()
-                    move_idx = np.array([board_representation.move_index(move, board.turn)])
+                    move_idx = np.array([board_representation.move_to_index(move, board.turn)])
                     # policy = board_representation.move_to_policy(move, board.turn)
                     value = np.array([result]) if board.turn == chess.WHITE else np.array([-result])
 
@@ -413,11 +413,7 @@ class Dataset(data.Dataset):
             self.data_file = self.open_data_file()
 
         state = self.data_file.root.data[index, 0:CONST.STATE_SIZE].reshape(CONST.INPUT_CHANNELS, CONST.BOARD_HEIGHT, CONST.BOARD_WIDTH)
-
-        policy_idx = int(self.data_file.root.data[index, -2])
-        policy = np.zeros(board_representation.LABEL_COUNT)
-        policy[policy_idx] = 1
-
+        policy = self.data_file.root.data[index, CONST.STATE_SIZE:-1]
         value = self.data_file.root.data[index, -1]
 
         return state, policy, value

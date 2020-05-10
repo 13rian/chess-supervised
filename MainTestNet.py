@@ -28,7 +28,8 @@ def mainTrain():
 
     # parameters
     network_dir = "networks"
-    network_file = network_dir + "/" + "network_batch_17000.pt"
+    network_file = network_dir + "/" + "network_batch_12000.pt"
+    training_progress_dir = "training_progress"
 
     # load the network
     logger.info("load the neural network: " + network_file)
@@ -47,12 +48,41 @@ def mainTrain():
     print(policy)
     print(value)
 
-    print("move: ", board_representation.policy_to_move(policy.detach().numpy()))
+    print("move: ", board_representation.policy_to_move(policy.detach().numpy(), board.turn))
 
     print(board.legal_moves)
 
 
 
+
+
+    # plot the learning progress
+    value_loss = np.load(training_progress_dir + "/value_loss.npy")
+    policy_loss = np.load(training_progress_dir + "/policy_loss.npy")
+    batches = np.load(training_progress_dir + "/batches.npy")
+
+    # plot the loss versus the number of seen batches
+    # plot the value training loss
+    fig1 = plt.figure(1)
+    plt.plot(batches, value_loss)
+    axes = plt.gca()
+    axes.grid(True, color=(0.9, 0.9, 0.9))
+    plt.title("Average Value Training Loss")
+    plt.xlabel("Training Samples")
+    plt.ylabel("Value Loss")
+    fig1.show()
+
+    # plot the training policy loss
+    fig2 = plt.figure(2)
+    plt.plot(batches, policy_loss)
+    axes = plt.gca()
+    axes.grid(True, color=(0.9, 0.9, 0.9))
+    plt.title("Average Policy Training Loss")
+    plt.xlabel("Training Samples")
+    plt.ylabel("Policy Loss")
+    fig2.show()
+
+    plt.show()
 
 
 

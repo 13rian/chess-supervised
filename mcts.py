@@ -139,12 +139,12 @@ class MCTS:
         :param temp:    the temperature
         :return:        vector containing the policy value for the moves
         """
-        counts = [self.N_sa[(s, a)] if (s, a) in self.N_sa else 0 for a in range(Config.tot_actions)]
+        counts = [self.N_sa[(s, a)] if (s, a) in self.N_sa else 0 for a in range(CONST.POLICY_SIZE)]
 
         # in order to learn something set the probabilities of the best action to 1 and all other action to 0
         if temp == 0:
             action = np.argmax(counts)
-            probs = [0] * Config.tot_actions
+            probs = [0] * CONST.POLICY_SIZE
             probs[action] = 1
             return np.array(probs)
 

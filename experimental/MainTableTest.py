@@ -1,24 +1,30 @@
 import logging
 import random
 import chess
-import torch
 
 import numpy as np
 
 from utils import utils
-from globals import CONST, Config
+from globals import CONST
 import data_processing
 import board_representation
-import networks
-import data_storage
 
 import tables
+
+
+class Position(tables.IsDescription):
+    fen = tables.StringCol(88)   # 16-character String for the fen notation
+    net_input = tables.e
+    move_idx = tables.UInt16Col()       # index of the move
+    value = tables.Int8Col()            # value of the position
+
+
 
 
 #@utils.profile
 def mainTrain():
     # The logger
-    utils.init_logger(logging.DEBUG, file_name="log/chess_sl.log")
+    utils.init_logger(logging.DEBUG, file_name="../log/chess_sl.log")
     logger = logging.getLogger('Chess_SL')
 
     # set the random seed
@@ -27,27 +33,6 @@ def mainTrain():
     np.random.seed(seed=None)
 
     logger.debug("start the main test program")
-
-    # test the rise network
-    network = networks.RiseNet(Config.learning_rate, Config.n_blocks, Config.n_se_blocks, Config.n_filters,
-                               Config.se_ratio, Config.n_mobile_filters, Config.n_filter_inc, Config.weight_decay)
-    network = data_storage.net_to_device(network, Config.training_device)
-
-    board = chess.Board()
-    input = board_representation.board_to_matrix(board)
-    input = torch.tensor(input)
-    input = input.to(Config.training_device, dtype=torch.float)
-    input = input.unsqueeze(0)
-
-
-    res = network(input)
-
-
-
-
-
-    test_str = "_5_6"
-    print(test_str.split("_"))
 
 
     # get the fen string of a board
@@ -85,7 +70,7 @@ def mainTrain():
     policy[policy_idx] = 1
 
 
-    pgn_file = open("pgns/KingBaseLite2019-B00-B19.pgn")
+    pgn_file = open("../pgns/KingBaseLite2019-B00-B19.pgn")
     game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
     while game is not None:
         result = data_processing.value_from_result(game.headers["Result"])

@@ -217,20 +217,26 @@ def move_to_policy(move, turn=chess.WHITE):
     return policy
 
 
-def policy_to_move(policy):
+def policy_to_move(policy, turn=chess.WHITE):
     """
     converts the passed move policy vector to a chess move, the move with the highest probability
     is chosen. the move is always viewed from the white perspective
     :param policy:      move policy vector
+    :param turn:        indicates if it is white's or black's turn
     :return:            chess move object
     """
     # get the move with the highest probability
     move_idx = np.argmax(policy)
     uci_move = WHITE_MOVE_LABELS[move_idx]
-    return chess.Move.from_uci(uci_move)
+    move = chess.Move.from_uci(uci_move)
+
+    if turn == chess.BLACK:
+        move = mirror_move(move)
+
+    return move
 
 
-def move_index(move, turn=chess.WHITE):
+def move_to_index(move, turn=chess.WHITE):
     """
     returns the index of the passed chess move
     :param move:    chess move object
@@ -242,6 +248,22 @@ def move_index(move, turn=chess.WHITE):
         move = mirror_move(move)
 
     return WHITE_MOVE_TABLE[move.uci()]
+
+
+def index_to_move(index, turn=chess.WHITE):
+    """
+    returns the chess move of the passed index
+    :param index:   the move index
+    :param turn:    the turn of the current player
+    :return:
+    """
+    uci_move = WHITE_MOVE_LABELS[index]
+    move = chess.Move.from_uci(uci_move)
+
+    if turn == chess.BLACK:
+        move = mirror_move(move)
+
+    return move
 
 
 ########################################################################################################

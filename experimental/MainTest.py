@@ -1,30 +1,24 @@
 import logging
 import random
 import chess
+import torch
 
 import numpy as np
 
 from utils import utils
-from globals import CONST
+from globals import CONST, Config
 import data_processing
 import board_representation
+import networks
+import data_storage
 
 import tables
-
-
-class Position(tables.IsDescription):
-    fen = tables.StringCol(88)   # 16-character String for the fen notation
-    net_input = tables.e
-    move_idx = tables.UInt16Col()       # index of the move
-    value = tables.Int8Col()            # value of the position
-
-
 
 
 #@utils.profile
 def mainTrain():
     # The logger
-    utils.init_logger(logging.DEBUG, file_name="log/chess_sl.log")
+    utils.init_logger(logging.DEBUG, file_name="../log/chess_sl.log")
     logger = logging.getLogger('Chess_SL')
 
     # set the random seed
@@ -33,6 +27,40 @@ def mainTrain():
     np.random.seed(seed=None)
 
     logger.debug("start the main test program")
+
+    # test the rise network
+    network = networks.RiseNet(Config.learning_rate, Config.n_blocks, Config.n_se_blocks, Config.n_filters,
+                               Config.se_ratio, Config.n_mobile_filters, Config.n_filter_inc, Config.weight_decay)
+    network = data_storage.net_to_device(network, Config.training_device)
+
+    board = chess.Board()
+    input = board_representation.board_to_matrix(board)
+    input = torch.tensor(input)
+    input = input.to(Config.training_device, dtype=torch.float)
+    input = input.unsqueeze(0)
+
+
+    res = network(input)
+
+
+    board = chess.Board()
+    board.push_san("g4")
+    board.push_san("e5")
+    board.push_san("f4")
+    board.push_uci("d8h4")
+    # board.push_san("Qh4")
+
+    print(board.turn == chess.WHITE)
+
+
+    list = [1, 2, 3, 4]
+    list.remove(2)
+    print(list)
+
+
+
+    test_str = "_5_6"
+    print(test_str.split("_"))
 
 
     # get the fen string of a board
@@ -56,7 +84,7 @@ def mainTrain():
 
 
     filter = data_processing.get_compression_filter()
-    data_file = tables.open_file("king-base-light.h5", mode='r', filters=filter)
+    data_file = tables.open_file("../king-base-light-avg.h5", mode='r', filters=filter)
 
 
     print(data_file.root.data.shape[0])
@@ -70,7 +98,7 @@ def mainTrain():
     policy[policy_idx] = 1
 
 
-    pgn_file = open("pgns/KingBaseLite2019-B00-B19.pgn")
+    pgn_file = open("../pgns/KingBaseLite2019-B00-B19.pgn")
     game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
     while game is not None:
         result = data_processing.value_from_result(game.headers["Result"])
@@ -82,6 +110,7 @@ def mainTrain():
             if move.uci() == "0000":
                 print(game)
                 print(move)
+
 
 
 
