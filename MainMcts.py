@@ -2,6 +2,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from torch.utils import data
 import random
+import time
 import numpy as np
 import logging
 import torch
@@ -30,7 +31,7 @@ def mainTrain():
 
     # parameters
     network_dir = "networks"
-    network_file = network_dir + "/" + "network_batch_12000.pt"
+    network_file = network_dir + "/" + "network_batch_158436.pt"
     training_progress_dir = "training_progress"
 
     # load the network
@@ -65,8 +66,23 @@ def mainTrain():
     chess_board.chess_board = board
     policy = mcts.mcts_policy(chess_board, 200, net, 1, 0)
 
-    print(board_representation.policy_to_move(policy, chess_board.chess_board.turn))
+    print("fastest mate move: ", board_representation.policy_to_move(policy, chess_board.chess_board.turn))
 
+
+
+    board = chess.Board()
+    board.push_san("e4")
+    board.push_san("e5")
+    board.push_san("Nf3")
+
+    chess_board = game.ChessBoard()
+    chess_board.chess_board = board
+    start_time = time.time()
+    policy = mcts.mcts_policy(chess_board, 800, net, 1, 0)
+    elapsed_time = time.time() - start_time
+    print("time needed for mtcs: ", elapsed_time)
+
+    print("suggested move after e4, e5, Nf3: ", board_representation.policy_to_move(policy, chess_board.chess_board.turn))
 
 
 

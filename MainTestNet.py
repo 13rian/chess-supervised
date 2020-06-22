@@ -1,15 +1,15 @@
 from pathlib import Path
 import matplotlib.pyplot as plt
-from torch.utils import data
+import pickle
 import random
 import numpy as np
 import logging
 import torch
 import chess.variant
 
-
 from utils import utils
 import board_representation
+import data_processing
 
 
 # @utils.profile
@@ -28,8 +28,41 @@ def mainTrain():
 
     # parameters
     network_dir = "networks"
-    network_file = network_dir + "/" + "network_batch_12000.pt"
+    network_file = network_dir + "/" + "network_batch_158436.pt"
     training_progress_dir = "training_progress"
+
+
+    # count the games in the database
+    dict_file = "elo_dict.pkl"
+    if not Path(dict_file).is_file():
+        elo_dict = data_processing.create_elo_dict("pgns")
+
+        with open(dict_file, 'wb') as f:
+            pickle.dump(elo_dict, f, pickle.HIGHEST_PROTOCOL)
+
+    with open(dict_file, 'rb') as f:
+        elo_dict = pickle.load(f)
+        elo = []
+        count = []
+        tot_count = 0
+        for key in sorted(elo_dict):
+            elo.append(int(key))
+            value = elo_dict[key]
+            tot_count += value
+            count.append(tot_count)
+
+    # plot the training policy loss
+    fig1 = plt.figure(1)
+    plt.plot(elo, count)
+    axes = plt.gca()
+    axes.grid(True, color=(0.9, 0.9, 0.9))
+    plt.title("Dataset Statistics")
+    plt.xlabel("Minimal ELO")
+    plt.ylabel("Total Number of Games")
+    fig1.show()
+    plt.show()
+
+
 
     # load the network
     logger.info("load the neural network: " + network_file)
@@ -63,24 +96,24 @@ def mainTrain():
 
     # plot the loss versus the number of seen batches
     # plot the value training loss
-    fig1 = plt.figure(1)
+    fig2 = plt.figure(2)
     plt.plot(batches, value_loss)
     axes = plt.gca()
     axes.grid(True, color=(0.9, 0.9, 0.9))
     plt.title("Average Value Training Loss")
     plt.xlabel("Training Samples")
     plt.ylabel("Value Loss")
-    fig1.show()
+    fig2.show()
 
     # plot the training policy loss
-    fig2 = plt.figure(2)
+    fig3 = plt.figure(3)
     plt.plot(batches, policy_loss)
     axes = plt.gca()
     axes.grid(True, color=(0.9, 0.9, 0.9))
     plt.title("Average Policy Training Loss")
     plt.xlabel("Training Samples")
     plt.ylabel("Policy Loss")
-    fig2.show()
+    fig3.show()
 
     plt.show()
 

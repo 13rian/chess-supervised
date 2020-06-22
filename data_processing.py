@@ -60,8 +60,6 @@ def create_fen_db(db_file, pgn_dir, elo_threshold=0):
         # read out all games in the pgn file
         game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
         while game is not None:
-            board = chess.Board()               # create a new board
-
             # skip games below elo threshold
             min_elo = min(game.headers["WhiteElo"], game.headers["BlackElo"])
             if int(min_elo) < elo_threshold:
@@ -75,6 +73,7 @@ def create_fen_db(db_file, pgn_dir, elo_threshold=0):
                 continue
 
             # go through all moves and append the data to the data file
+            board = chess.Board()  # create a new board
             for move in game.mainline_moves():
                 try:
                     fen = board.fen()
@@ -108,6 +107,9 @@ def create_fen_db(db_file, pgn_dir, elo_threshold=0):
             if game_count % 5000 == 0:
                 connection.commit()
                 logger.debug("processed {} games".format(game_count))
+
+        # commit the last few games
+        connection.commit()
 
         pgn_file.close()
 
@@ -353,6 +355,37 @@ def create_data_set(data_set_file, pgn_dir):
 #     with open(fen_dict_file, 'wb') as output:
 #         pickle.dump(fen_dict, output, pickle.HIGHEST_PROTOCOL)
 
+
+
+def create_elo_dict(pgn_dir):
+    """
+    creates a dict that contains the min elo as key and the count as value
+    :param pgn_dir:         the directory containing all the pgn files
+    :return:
+    """
+    elo_dict = {}
+    for pgn_file_name in os.listdir(pgn_dir):
+        if not pgn_file_name.endswith(".pgn"):
+            continue
+
+        pgn_file_path = pgn_dir + "/" + pgn_file_name
+        pgn_file = open(pgn_file_path)
+        print("start to process file {}".format(pgn_file_name))
+
+        # read out all games in the pgn file
+        game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
+        while game is not None:
+            min_elo = min(game.headers["WhiteElo"], game.headers["BlackElo"])
+            if min_elo in elo_dict.keys():
+                elo_dict[min_elo] += 1
+            else:
+                elo_dict[min_elo] = 1
+
+            game = chess.pgn.read_game(pgn_file)  # read out the next game from the pgn
+
+        pgn_file.close()
+
+    return elo_dict
 
 
 
